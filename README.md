@@ -1,2 +1,3 @@
 # MeteoClock
-Clock with meostation on arduino
+Clock with meteostation on arduino
+Go to wiki for more information
