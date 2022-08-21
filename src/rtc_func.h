@@ -1,3 +1,18 @@
+// Meteo Clock - cool clock with meteostation on Arduino
+// Copyright (C) 2022 WolodiaM
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 void rtc_check_old()
 {
     DateTime now = rtc.now();
@@ -10,7 +25,7 @@ void rtc_check_old()
     lcd.print('.');
     lcd.print(now.day());
     lcd.setCursor(3, 2);
-    lcd.print(daysOfTheWeek[now.dayOfWeek()]);
+    lcd.print(daysOfTheWeek[now.dayOfTheWeek()]);
     lcd.setCursor(3, 3);
     lcd.print(now.hour());
     lcd.print(':');
@@ -24,7 +39,6 @@ void rtc_check_old()
 
 void rtc_check()
 {
-#ifdef MILLIS
     static unsigned long tmr = 0;
     if (millis() - tmr >= 500)
     {
@@ -32,13 +46,12 @@ void rtc_check()
         now = rtc.now();
         nmb.dot(7, dotCounter);
     }
-#endif
     nmb.printNumber(0, nmb.convert(now.hour(), 1));
     nmb.printNumber(3, nmb.convert(now.hour(), 2));
     nmb.printNumber(9, nmb.convert(now.minute(), 1));
     nmb.printNumber(12, nmb.convert(now.minute(), 2));
     lcd.setCursor(16, 0);
-    lcd.print(daysOfTheWeekShort[now.dayOfWeek()]);
+    lcd.print(daysOfTheWeekShort[now.dayOfTheWeek()]);
     lcd.setCursor(15, 1);
     lcd.print(now.month());
     lcd.print(".");
@@ -64,17 +77,3 @@ void rtc_check()
     lcd.print(now.second());
 #endif
 }
-
-#ifdef HARDVARETIMER
-void tmri()
-{
-    counter++;
-    dotCounter = !dotCounter;
-    nmb.dot(7, dotCounter);
-    if (counter == 5)
-    {
-        now = rtc.now();
-        counter = 0;
-    }
-}
-#endif
