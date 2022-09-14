@@ -1,4 +1,4 @@
-# Licanse
+# License
 Meteo Clock - cool clock with meteostation on Arduino
 Copyright (C) 2022 WolodiaM
 
