@@ -19,39 +19,44 @@
 #define MAX_SCREAN 3   // screan numbers
 #define DHTTYPE DHT11  // dht tuypes
 #define NODEBUG        // debug options NODEBUG/CHARTEST/NUMBERTEST
-#define TEMPBMP        // NODATA/TEMPDHT/TEMPBMP/HUMDHT/PRESSBMP/SECOND, display in right down corner on main screan
+#define TEMPBMP // NODATA/TEMPDHT/TEMPBMP/HUMDHT/PRESSBMP/SECOND, display in
+                // right down corner on main screan
+
 // pins
-#define DHTPIN 23 // pin for dht
-#define BTNPIN 35 // pin for button
+#define DHTPIN 15 // pin for dht
+#define BTNPIN 16 // pin for button
 // Libs
-#include <SPI.h>               // need for Adafruit bus IO lib (dependency)
-#include <Wire.h>              // i2c bus lib (hardvare)
-#include <Adafruit_Sensor.h>   // need for dht lib (dependency)
-#include <LiquidCrystal_I2C.h> // lib for lcd (output)
-#include <RTClib.h>            // lib for rtc (time)
-#include <btnapi.h>            // lib for buttons (input)
-#include <DHT.h>               // lib for dht (temperature + humidity)
-#include <Adafruit_BMP085.h>   // lib for bmp085/180 (temperature + pressure)
+#include "Adafruit_BMP085.h"   // lib for bmp085/180 (temperature + pressure)
+#include "Adafruit_Sensor.h"   // need for dht lib (dependency)
+#include "DHT.h"               // lib for dht (temperature + humidity)
+#include "LiquidCrystal_I2C.h" // lib for lcd (output)
+#include "RTClib.h"            // lib for rtc (time)
+#include "SPI.h"               // need for Adafruit bus IO lib (dependency)
+#include "Wire.h"              // i2c bus lib (hardvare)
+#include "btnapi.h"            // lib for buttons (input)
 // Objects
 LiquidCrystal_I2C lcd(0x27, 20, 4);       // lcd object
 DHT dht(DHTPIN, DHTTYPE);                 // dht object
-RTC_DS3231 rtc;                           // rtc object
+DS3231 rtc;                               // rtc object
 Adafruit_BMP085 bmp;                      // bmp object
 btnapi btn(BTNPIN, LOW_PULL, NORM_CLOSE); // btn object
 DateTime now;                             // time object
 // Vars
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}; // days names
-char daysOfTheWeekShort[7][3] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};                          // short version of day names
+char daysOfTheWeek[7][12] = {"Sunday",   "Monday", "Tuesday", "Wednesday",
+                             "Thursday", "Friday", "Saturday"}; // days names
+char daysOfTheWeekShort[7][4] = {
+    "Sun", "Mon", "Tue", "Wed",
+    "Thu", "Fri", "Sat"}; // short version of day names
 volatile int counter = 0;
 volatile bool dotCounter = 0;
 // Files
 #include "charset.h"
 #include "numbers.h"
 numbers nmb;
+#include "bmp_func.h"
+#include "dht_func.h"
 #include "lcd.h"
 #include "rtc_func.h"
-#include "dht_func.h"
-#include "bmp_func.h"
 #ifndef NODEBUG
 #include "debug.h"
 #endif

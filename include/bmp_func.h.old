@@ -13,27 +13,20 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-void lcd_init_text()
-{
+#ifndef __METEOCLOCK_BMP_H__
+#define __METEOCLOCK_BMP_H__
+void bmp_check() {
   lcd.setCursor(0, 0);
-  lcd.print("     MeteoClock");
+  lcd.print("     BMP Sensor");
   lcd.setCursor(0, 1);
-  lcd.print("1 click - next page");
+  lcd.print("Press: ");
+  lcd.print(bmp.readPressure() / 133.3223684);
+  lcd.print("mmHg;");
   lcd.setCursor(0, 2);
-  lcd.print("hold btn - on/off");
+  lcd.print("Temp:  ");
+  lcd.print(bmp.readTemperature());
+  lcd.print("C;");
   lcd.setCursor(0, 3);
-  lcd.print("Created by WolodiaM");
-  delay(INIT_DEL);
-  lcd.clear();
+  lcd.print("     MeteoClock");
 }
-
-void chars()
-{
-  lcd.createChar(0, block);
-  lcd.createChar(1, blockUp);
-  lcd.createChar(2, blockDown);
-  lcd.createChar(4, upRight);
-  lcd.createChar(5, upLeft);
-  lcd.createChar(6, downRight);
-  lcd.createChar(7, downLeft);
-}
+#endif // __METEOCLOCK_BMP_H__

@@ -1,0 +1,79 @@
+// Meteo Clock - cool clock with meteostation on Arduino
+// Copyright (C) 2022 WolodiaM
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#ifndef __METEOCLOCK_RTC_H__
+#define __METEOCLOCK_RTC_H__
+void rtc_check_old() {
+  DateTime now = rtc.now();
+  lcd.setCursor(0, 0);
+  lcd.print("      RTC Data");
+  lcd.setCursor(3, 1);
+  lcd.print(now.year());
+  lcd.print('.');
+  lcd.print(now.month());
+  lcd.print('.');
+  lcd.print(now.day());
+  lcd.setCursor(3, 2);
+  lcd.print(daysOfTheWeek[now.dayOfTheWeek()]);
+  lcd.setCursor(3, 3);
+  lcd.print(now.hour());
+  lcd.print(':');
+  lcd.print(now.minute());
+  lcd.print(':');
+  lcd.setCursor(10, 3);
+  lcd.print(" ");
+  lcd.setCursor(9, 3);
+  lcd.print(now.second());
+}
+
+void rtc_check() {
+  static unsigned long tmr = 0;
+  if (millis() - tmr >= 500) {
+    dotCounter = !dotCounter;
+    now = rtc.now();
+    nmb.dot(7, dotCounter);
+  }
+  nmb.printNumber(0, nmb.convert(now.hour(), 1));
+  nmb.printNumber(3, nmb.convert(now.hour(), 2));
+  nmb.printNumber(9, nmb.convert(now.minute(), 1));
+  nmb.printNumber(12, nmb.convert(now.minute(), 2));
+  lcd.setCursor(16, 0);
+  lcd.print(daysOfTheWeekShort[now.dayOfTheWeek()]);
+  lcd.setCursor(15, 1);
+  lcd.print(now.month());
+  lcd.print(".");
+  lcd.print(now.day());
+  lcd.print(".");
+  lcd.setCursor(15, 2);
+  lcd.print(now.year());
+#ifndef NODATA
+  lcd.setCursor(15, 3);
+#endif
+#if defined(TEMPDHT)
+  lcd.print(dht.readTemperature());
+#elif defined(TEMPBMP)
+  lcd.print(bmp.readTemperature());
+#elif defined(HUMDHT)
+  lcd.print(dht.readHumidity());
+#elif defined(PRESSBMP)
+  lcd.print(bmp.readPressure() / 133.3223684);
+#elif defined(SECOND)
+  lcd.setCursor(17, 3);
+  lcd.print(" ");
+  lcd.setCursor(16, 3);
+  lcd.print(now.second());
+#endif
+}
+#endif // __METEOCLOCK_RTC_H__

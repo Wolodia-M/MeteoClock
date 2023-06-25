@@ -1,0 +1,33 @@
+// Meteo Clock - cool clock with meteostation on Arduino
+// Copyright (C) 2022 WolodiaM
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#ifndef __METEOCLOCK_DHT_H__
+#define __METEOCLOCK_DHT_H__
+void dht_check() {
+  lcd.setCursor(0, 0);
+  lcd.print("     DHT Sensor");
+  lcd.setCursor(0, 1);
+  ;
+  lcd.print("Temp: ");
+  lcd.print(dht.readTemperature());
+  lcd.print("C;");
+  lcd.setCursor(0, 2);
+  lcd.print("Hum:  ");
+  lcd.print(dht.readHumidity());
+  lcd.print("%;");
+  lcd.setCursor(0, 3);
+  lcd.print("     MeteoClock");
+}
+#endif // __METEOCLOCK_DHT_H__

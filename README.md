@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 Clock with meteostation on arduino
 Go to [wiki](https://github.com/Wolodia-M/MeteoClock/wiki) for more information
 # !WARNING!
-This project is created for VS Code and Platform IO.
+This project is created for Platform IO.
 It didn't work with Arduino IDE.
 # Credits
 Created by WolodiaM
