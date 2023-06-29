@@ -8,7 +8,7 @@
  * @copyright (C) 2023 WolodiaM
  * @license GPL v3.0 or later
  *
- * Copyright (C) 2022  WolodiaM
+ * Copyright (C) 2023  WolodiaM
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,20 +30,21 @@
 class encapi {
 private:
   RotaryEncoder enc;
-  btnapi btn;
+  btnapi	btn;
 
 public:
   encapi(int s1, int s2, int key)
       : enc(s1, s2, RotaryEncoder::LatchMode::FOUR3), btn(key) {}
-  void tick() { this->enc.tick(); }
-  void setPosition(long pos) { this->enc.setPosition(pos); }
-  long getPosition() { return this->enc.getPosition(); }
+  void			   tick() { this->enc.tick(); }
+  void			   setPosition(long pos) { this->enc.setPosition(pos); }
+  long			   getPosition() { return this->enc.getPosition(); }
   RotaryEncoder::Direction getDirection() { return this->enc.getDirection(); }
-  unsigned long getRPM() { return this->enc.getRPM(); }
-  bool rotatedHold() {
-    if (this->btn.isHold()) {
-      return true;
-    }
+  unsigned long		   getRPM() { return this->enc.getRPM(); }
+  bool			   rotatedHold() {
+	if (this->btn.state()) {
+	  return true;
+	}
+	return false;
   }
   bool btnClick() { return this->btn.isClick(); }
   bool btnState() { return this->btn.state(); }

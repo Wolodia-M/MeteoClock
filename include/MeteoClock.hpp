@@ -29,10 +29,11 @@
 #define PIN_S2 14
 #define PIN_KEY 13
 // Debugs
-#define DEBUG           // Enable / disable debug - DEBUG/NODEBUG
-#define NO_DBG_GENERICK // Some generick debug DBG_GENERICK/NO_DBG_GENERICK
-#define NO_DBG_NUM      // Debug numbers DBG_NUM/NO_DBG_NUM
-#define DBG_STATUS      // Debug some status info DBG_STATUS/NO_DBG_STATUS
+#define DEBUG	     // Enable / disable debug - DEBUG/NODEBUG
+#define NO_DBG_NUM   // Debug numbers DBG_NUM/NO_DBG_NUM
+#define DBG_STATUS   // Debug some status info DBG_STATUS/NO_DBG_STATUS
+#define NO_DBG_INPUT // Some debug related to input handlers
+		     // DBG_INPUT/NO_DBG_INPUT
 // Utility
 #define BOOT_SECONDS 10 // Time to show boot text
 #define VER_STR String("v2.0")
@@ -41,8 +42,8 @@
 #define RTC_PAGE 1
 #define STNG_PAGE 0
 // Wifi
-#define SSID "Xiaomi_HOME"
-#define PASSWORD "i749-krid-n7jq"
+#define SSID
+#define PASSWORD
 #define NTP_SERVER "pool.ntp.org"
 #define TIMEZONE 2
 #endif // __MEOCLOCK_HEADER_HPP__

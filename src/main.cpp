@@ -25,6 +25,7 @@
 // Project headers
 #include "LCDWrapper.hpp"
 #include "enc_wrap.hpp"
+#include "encoder.hpp"
 #include "handler_base.hpp"
 #include "rtc_handler.hpp"
 #include "stng_handler.hpp"
@@ -48,6 +49,7 @@
 LCD	  lcd;
 DS3231	  rtc;
 encapi	  enc(PIN_S1, PIN_S2, PIN_KEY);
+Encoder	  enc1(PIN_KEY, PIN_S1, PIN_S2);
 WiFiUDP	  udp;
 NTPClient ntp(udp, NTP_SERVER, TIMEZONE);
 // Global variables
@@ -75,15 +77,15 @@ void setup() {
   // WiFi and NTP
   WiFi.begin(SSID, PASSWORD);
 #if defined(DEBUG) && defined(DBG_STATUS)
-  Serial.println("Connecting to WiFi...");
-  lcd.writeStr("Connecting to WiFi.", 0, 0);
+  Serial.print("Connecting to WiFi...");
 #endif
+  lcd.writeStr("Connecting to WiFi.", 0, 0);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
 #if defined(DEBUG) && defined(DBG_STATUS)
     Serial.print(".");
-    lcd.writeCont(".");
 #endif
+    lcd.writeCont(".");
   }
   ntp.begin();
   // init text
@@ -112,7 +114,7 @@ void setup() {
   *(ptr_table + 5) = (void *)&ntp;
   *(ptr_table + 6) = (void *)NULL;
   // Finishing of init
-#if defined(DEBUG) && defined(DBG_GENERICK)
+#if defined(DEBUG) && defined(DBG_STATUS)
   Serial.println("Inited");
 #endif
   page = RTC_PAGE;
@@ -143,46 +145,85 @@ void loop() {
     prev_gfx = curr;
     handlers[page].draw(&handlers[page], ptr_table);
   }
-  enc.tick();
-  long pos   = enc.getPosition();
-  bool click = enc.btnClick();
-  if ((pos != last_enc_pos) || click) {
-    // State of encode
-    uint8_t state = 0;
-    state |= (enc.btnState() ? 0x01 : 0x00);
-    state |= ((pos != last_enc_pos) ? 0x02 : 0x00);
-    *(ptr_table + 6) = (void *)&state;
-    // Call to ctrl handler
-    page_ch ret = handlers[page].ctrl(&handlers[page], ptr_table);
-    // Page change
-    if (ret == page_ch::NEXT_PAGE) {
-      page++;
-      if (page > MAX_PAGE) {
-	page = 0;
-      }
-    } else if (ret == page_ch::PREV_PAGE) {
-      if (page != 0) {
-	page--;
-      } else {
-	page = MAX_PAGE;
-      }
-    } else if (ret == page_ch::DEFAULT_CTRL) {
-      int rot = enc.getDir();
-      if (rot == 1) {
-	page++;
-	if (page > MAX_PAGE) {
-	  page = 0;
-	}
+  // enc.tick();
+  enc1.tick();
+  // long pos   = enc.getPosition();
+  // bool click = enc.btnClick();
+  // if ((pos != last_enc_pos) || click) {
+  //   // State of encode
+  //   uint8_t state = 0;
+  //   state |= (enc.btnClick() ? 0x01 : 0x00);
+  //   state |= ((pos != last_enc_pos) ? 0x02 : 0x00);
+  //   *(ptr_table + 6) = (void *)&state;
+  //   // Call to ctrl handler
+  //   page_ch ret = handlers[page].ctrl(&handlers[page], ptr_table);
+  //   // Page change
+  //   if (ret == page_ch::NEXT_PAGE) {
+  //     page++;
+  //     if (page > MAX_PAGE) {
+  //       page = 0;
+  //     }
+  //   } else if (ret == page_ch::PREV_PAGE) {
+  //     if (page != 0) {
+  //       page--;
+  //     } else {
+  //       page = MAX_PAGE;
+  //     }
+  //   } else if (ret == page_ch::DEFAULT_CTRL) {
+  //     int rot = enc.getDir();
+  //     if (rot == 1) {
+  //       page++;
+  //       if (page > MAX_PAGE) {
+  //         page = 0;
+  //       }
+  //     } else if (rot == -1) {
+  //       if (page != 0) {
+  //         page--;
+  //       } else {
+  //         page = MAX_PAGE;
+  //       }
+  //     }
+  //   }
+  //   last_enc_pos = pos;
+  // }
+#if defined(DEBUG) && defined(DBG_INPUT)
+  static unsigned long tmr_dbg_enc = 0;
+  if (curr - tmr_dbg_enc >= 100) {
+    tmr_dbg_enc = curr;
+    enc1.latch();
+    Serial.print("Input sampling: ");
+    switch (enc1.state()) {
+    case encstate::NONE:
+      Serial.println("no changes");
+      break;
+    case encstate::CLICK:
+      Serial.println("button click");
+      break;
+    case encstate::ROTATION: {
+      Serial.print("rotation, direction: ");
+      int rot = enc1.direction();
+      if (rot == 0) {
+	Serial.println("no rotation");
+      } else if (rot == 1) {
+	Serial.println("clockwise");
       } else if (rot == -1) {
-	if (page != 0) {
-	  page--;
-	} else {
-	  page = MAX_PAGE;
-	}
+	Serial.println("counterclockwise");
       }
+    } break;
+    case encstate::HOLD_ROTATION: {
+      Serial.print("rotation with button holding, direction: ");
+      int rot = enc1.direction();
+      if (rot == 0) {
+	Serial.println("no rotation");
+      } else if (rot == 1) {
+	Serial.println("clockwise");
+      } else if (rot == -1) {
+	Serial.println("counterclockwise");
+      }
+    } break;
     }
-    last_enc_pos = pos;
   }
+#endif
   // btn.tick(); // tick for button
   // static byte screen = 0;
   // if (btn.isClick()) // if click -> screen++ or screen = 0

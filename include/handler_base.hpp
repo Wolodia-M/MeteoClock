@@ -8,7 +8,7 @@
  * @copyright (C) 2023 WolodiaM
  * @license GPL v3.0 or later
  *
- * Copyright (C) 2022  WolodiaM
+ * Copyright (C) 2023  WolodiaM
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
