@@ -21,15 +21,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 // C++ libraries
-#include "DS3231.h"
 // Project headers
-#include "LCDWrapper.hpp"
 #include "handler_base.hpp"
 // Code
 #ifndef __METEOCLOCK_RTC_HPP__
 #define __METEOCLOCK_RTC_HPP__
 #define RTC_TABLE_ENTRY [RTC_PAGE] = {rtc_init, rtc_draw, rtc_ctrl}
-void rtc_init(handler_t *handler, void **args);
-void rtc_draw(handler_t *handler, void **args);
+void	rtc_init(handler_t *handler, void **args);
+void	rtc_draw(handler_t *handler, void **args);
 page_ch rtc_ctrl(handler_t *handler, void **args);
 #endif // __METEOCLOCK_RTC_HPP__

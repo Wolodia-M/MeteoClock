@@ -1,7 +1,7 @@
 /**
- * @file stng_handler.hpp
+ * @file bmp_handler.hpp
  * @author WolodiaM (w_melnyk@outlook.com)
- * @brief Settings screen
+ * @brief DMP screen
  * @version 1.0
  * @date 2023-06-11
  *
@@ -24,10 +24,10 @@
 // Project headers
 #include "handler_base.hpp"
 // Code
-#ifndef __METEOCLOCK_STNG_HPP__
-#define __METEOCLOCK_STNG_HPP__
-#define STNG_TABLE_ENTRY [STNG_PAGE] = {stng_init, stng_draw, stng_ctrl}
-void	stng_init(handler_t *handler, void **args);
-void	stng_draw(handler_t *handler, void **args);
-page_ch stng_ctrl(handler_t *handler, void **args);
-#endif // __METEOCLOCK_STNG_HPP__
+#ifndef __METEOCLOCK_BMP_HPP__
+#define __METEOCLOCK_BMP_HPP__
+#define BMP_TABLE_ENTRY [BMP_PAGE] = {bmp_init, bmp_draw, bmp_ctrl}
+void	bmp_init(handler_t *handler, void **args);
+void	bmp_draw(handler_t *handler, void **args);
+page_ch bmp_ctrl(handler_t *handler, void **args);
+#endif // __METEOCLOCK_BMP_HPP__

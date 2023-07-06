@@ -1,7 +1,7 @@
 /**
- * @file stng_handler.hpp
+ * @file dht_handler.hpp
  * @author WolodiaM (w_melnyk@outlook.com)
- * @brief Settings screen
+ * @brief DHT screen
  * @version 1.0
  * @date 2023-06-11
  *
@@ -24,10 +24,10 @@
 // Project headers
 #include "handler_base.hpp"
 // Code
-#ifndef __METEOCLOCK_STNG_HPP__
-#define __METEOCLOCK_STNG_HPP__
-#define STNG_TABLE_ENTRY [STNG_PAGE] = {stng_init, stng_draw, stng_ctrl}
-void	stng_init(handler_t *handler, void **args);
-void	stng_draw(handler_t *handler, void **args);
-page_ch stng_ctrl(handler_t *handler, void **args);
-#endif // __METEOCLOCK_STNG_HPP__
+#ifndef __METEOCLOCK_DHT_HPP__
+#define __METEOCLOCK_DHT_HPP__
+#define DHT_TABLE_ENTRY [DHT_PAGE] = {dht_init, dht_draw, dht_ctrl}
+void	dht_init(handler_t *handler, void **args);
+void	dht_draw(handler_t *handler, void **args);
+page_ch dht_ctrl(handler_t *handler, void **args);
+#endif // __METEOCLOCK_DHT_HPP__

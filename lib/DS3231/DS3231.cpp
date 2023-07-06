@@ -34,7 +34,7 @@ void DS3231::init() {
 }
 // Get
 uint8_t DS3231::getSec() {
-  uint8_t sec = this->read(0x00);
+  uint8_t sec	       = this->read(0x00);
   uint8_t decimalValue = ((sec & 0b01110000) >> 4) * 10 + (sec & 0b00001111);
   return decimalValue;
 }
@@ -45,12 +45,12 @@ uint8_t DS3231::getMin() {
   return decimalValue;
 }
 uint8_t DS3231::getHour() {
-  uint8_t hour = this->read(0x02);
+  uint8_t hour	       = this->read(0x02);
   uint8_t decimalValue = ((hour & 0b00110000) >> 4) * 10 + (hour & 0b00001111);
   return decimalValue;
 }
 uint8_t DS3231::getDate() {
-  uint8_t date = this->read(0x04);
+  uint8_t date	       = this->read(0x04);
   uint8_t decimalValue = ((date & 0b00110000) >> 4) * 10 + (date & 0b00001111);
   return decimalValue;
 }
@@ -61,7 +61,7 @@ uint8_t DS3231::getMonth() {
   return decimalValue;
 }
 uint16_t DS3231::getYear() {
-  uint8_t year = this->read(0x06);
+  uint8_t  year		= this->read(0x06);
   uint16_t decimalValue = ((year & 0b11110000) >> 4) * 10 + (year & 0b00001111);
   return decimalValue + 2000;
 }
@@ -75,17 +75,24 @@ float DS3231::getTemp() {
   return temp * 0.25;
 }
 uint8_t DS3231::getDay() {
-  uint8_t day = read(0x04);
-  uint8_t month = read(0x05);
-  uint16_t year = read(0x06) + 2000;
-  if (month < 3) {
-    month += 12;
-    year--;
+  // Reference date: January 1, 2000 (Saturday)
+  uint16_t referenceYear      = 2000;
+  uint8_t  referenceMonth     = 1;
+  uint8_t  referenceDay	      = 1;
+  uint8_t  referenceDayOfWeek = 6; // Saturday (0-based)
+  uint8_t  day		      = getDate();
+  uint8_t  month	      = getMonth();
+  uint16_t year		      = getYear();
+  uint64_t days		      = 0;
+  for (uint16_t y = referenceYear; y < year; y++) {
+    days += this->isLeapYear(y) ? 366 : 365;
   }
-  uint8_t DOW = (day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 -
-                 year / 100 + year / 400) %
-                7;
-  return DOW;
+  for (uint8_t m = 1; m < month; m++) {
+    days += this->daysInMonth(m, year);
+  }
+  days += day - 1;
+  uint8_t dayOfWeek = (referenceDayOfWeek + days) % 7;
+  return dayOfWeek;
 }
 DS3231_HOUR DS3231::getHourType() { return (DS3231_HOUR)(this->read(0x0D)); }
 // Set
@@ -111,10 +118,24 @@ void DS3231::setMonth(uint8_t val) {
 }
 void DS3231::setYear(uint16_t val) {
   uint8_t lastTwoDigits = val % 100;
-  uint8_t bcdValue = ((lastTwoDigits / 10) << 4) + (lastTwoDigits % 10);
+  uint8_t bcdValue	= ((lastTwoDigits / 10) << 4) + (lastTwoDigits % 10);
   this->write(0x06, bcdValue);
 }
 void DS3231::setHourType(DS3231_HOUR type) { this->write(0x0D, type); }
+// Helper
+uint8_t DS3231::daysInMonth(uint8_t mon, uint16_t year) {
+  const uint8_t dim[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+  // Account for the leap year if it's February
+  if (mon == 2 && this->isLeapYear(year)) {
+    return 29;
+  }
+
+  return dim[mon - 1];
+}
+bool DS3231::isLeapYear(uint16_t year) {
+  return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
 // Internal
 void DS3231::write(uint8_t reg, uint8_t val) {
   Wire.beginTransmission(0x68);

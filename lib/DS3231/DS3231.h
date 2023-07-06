@@ -28,16 +28,19 @@
 enum DS3231_HOUR { AM = 0, PM = 1 };
 class DS3231 {
 public:
+  // Init
   void init();
-  uint8_t getSec();
-  uint8_t getMin();
-  uint8_t getHour();
-  uint8_t getDate();
-  uint8_t getMonth();
-  uint16_t getYear();
-  uint8_t getDay();
+  // Get
+  uint8_t     getSec();
+  uint8_t     getMin();
+  uint8_t     getHour();
+  uint8_t     getDate();
+  uint8_t     getMonth();
+  uint16_t    getYear();
+  uint8_t     getDay();
   DS3231_HOUR getHourType();
-  float getTemp();
+  float	      getTemp();
+  // Set
   void setSec(uint8_t val);
   void setMin(uint8_t val);
   void setHour(uint8_t val);
@@ -45,9 +48,13 @@ public:
   void setMonth(uint8_t val);
   void setYear(uint16_t val);
   void setHourType(DS3231_HOUR type);
+  // Helper
+  uint8_t daysInMonth(uint8_t mon, uint16_t year);
+  bool	  isLeapYear(uint16_t year);
 
 private:
-  void write(uint8_t reg, uint8_t val);
+  // Internal
+  void	  write(uint8_t reg, uint8_t val);
   uint8_t read(uint8_t reg);
 };
 #endif // __DS3231_H__

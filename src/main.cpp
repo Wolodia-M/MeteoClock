@@ -15,16 +15,19 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // C++ libraries
 #include "Arduino.h"
+#include "DHTesp.h"
 #include "DS3231.h"
 #include "ESP8266WiFi.h"
 #include "NTPClient.h"
+#include "SFE_BMP180.h"
 #include "WiFiUdp.h"
 #include "btnapi.h"
 // Project header
 #include "MeteoClock.hpp"
 // Project headers
 #include "LCDWrapper.hpp"
-#include "enc_wrap.hpp"
+#include "bmp_handler.hpp"
+#include "dht_handler.hpp"
 #include "encoder.hpp"
 #include "handler_base.hpp"
 #include "rtc_handler.hpp"
@@ -32,6 +35,7 @@
 #ifdef DEBUG
 #include "debug.hpp"
 #endif
+// Global variables
 // Objects
 /**
  * @brief Number of thongs in pointer table
@@ -41,39 +45,41 @@
  * 3 -> encoder ptr
  * 4 -> WifiUDP ptr
  * 5 -> NTPClient ptr
- * 6 -> enc change (bitfields):
- *        bit 0 - button click state
- *        bit 1 - encoder rotation state
+ * 6 -> bmp ptr
+ * 7 -> btn ptr
+ * 8 -> dht ptr
+ * 9 -> settings struct ptr
  */
-#define PTR_TABLE_SIZE 7
-LCD	  lcd;
-DS3231	  rtc;
-encapi	  enc(PIN_S1, PIN_S2, PIN_KEY);
-Encoder	  enc1(PIN_KEY, PIN_S1, PIN_S2);
-WiFiUDP	  udp;
-NTPClient ntp(udp, NTP_SERVER, TIMEZONE);
-// Global variables
+#define PTR_TABLE_SIZE 10
+LCD	   lcd;
+DS3231	   rtc;
+Encoder	   enc(PIN_KEY, PIN_S1, PIN_S2);
+WiFiUDP	   udp;
+NTPClient  ntp(udp, NTP_SERVER);
+SFE_BMP180 bmp;
+btnapi	   btn(PIN_BTN, LOW_PULL, NORM_OPEN);
+DHTesp	   dht;
+// Settings
+settings_t settings;
 // Handlers data
-handler_t handlers[] = {STNG_TABLE_ENTRY, RTC_TABLE_ENTRY};
+handler_t handlers[] = {STNG_TABLE_ENTRY, RTC_TABLE_ENTRY, BMP_TABLE_ENTRY,
+			DHT_TABLE_ENTRY};
 void	**ptr_table;
 // Helper
 uint8_t page;
-long	last_enc_pos = 0;
+long	last_enc_pos   = 0;
+bool	display_enable = true;
 // Timers
-unsigned long	    prev_gfx = 0;
-const unsigned long int_gfx  = 500;
-unsigned long	    prev_enc = 0;
-const unsigned long int_enc  = 50;
+unsigned long	    prev_gfx   = 0;
+const unsigned long int_gfx    = 500;
+unsigned long	    prev_cntrl = 0;
+const unsigned long int_cntrl  = 50;
 // Setup
 void setup() {
 // For debugging
 #if defined(DEBUG)
   Serial.begin(115200);
 #endif
-  // init sensors
-  // dht.begin();                              // dht11 init
-  // bmp.begin();                              // bmp180 init
-  enc.setPosition(0); // Center encoder
   // WiFi and NTP
   WiFi.begin(SSID, PASSWORD);
 #if defined(DEBUG) && defined(DBG_STATUS)
@@ -88,6 +94,7 @@ void setup() {
     lcd.writeCont(".");
   }
   ntp.begin();
+  ntp.setTimeOffset(TIME_OFFSET * 3600);
   // init text
   lcd.clear();
   lcd.writeStr("MeteoClock v2.0   WM", 0, 0);
@@ -98,7 +105,6 @@ void setup() {
   ptr_table = (void **)malloc(PTR_TABLE_SIZE * sizeof(void *));
   if (ptr_table == NULL) {
 #if defined(DEBUG) && defined(DBG_STATUS)
-    Serial.begin(115200);
     Serial.println(
 	"Error, cannot malloc ptr_table, so, cannot call any handler!\n "
 	"Panic!\n Controller wil be halted until reboot.");
@@ -112,15 +118,49 @@ void setup() {
   *(ptr_table + 3) = (void *)&enc;
   *(ptr_table + 4) = (void *)&udp;
   *(ptr_table + 5) = (void *)&ntp;
-  *(ptr_table + 6) = (void *)NULL;
+  *(ptr_table + 6) = (void *)&bmp;
+  *(ptr_table + 7) = (void *)&btn;
+  *(ptr_table + 8) = (void *)&dht;
+  *(ptr_table + 9) = (void *)&settings;
   // Finishing of init
 #if defined(DEBUG) && defined(DBG_STATUS)
   Serial.println("Inited");
 #endif
   page = RTC_PAGE;
-  for (int i = 0; i < MAX_PAGE; i++) {
-    handlers[page].init(&handlers[page], ptr_table);
+  for (int i = 0; i <= MAX_PAGE; i++) {
+    handlers[i].init(&handlers[i], ptr_table);
   }
+  // Setup settings
+#if defined(NO_AMERICAN_DATE_FORMAT)
+  settings.date_format = settings_t::date_format_t::DMY;
+#elif defined(AMERICAN_DATE_FORMAT)
+  settings.date_format	= settings_t::date_format_t::MDY;
+#else
+  settings.date_format	= settings_t::date_format_t::DMY;
+#endif
+  settings.date_divisor = settings_t::date_divisor_t::DOT;
+#if defined(TIME_OFFSET)
+  settings.utc_offset	  = TIME_OFFSET;
+  settings.utc_offset_min = 0;
+#endif
+#if defined(BMP_PRESS_SIDE)
+  settings.side_display = settings_t::side_display_t::BMP_PRESS;
+#elif defined(BMP_TEMP_SIDE)
+  settings.side_display = settings_t::side_display_t::BMP_TEMP;
+#elif defined(DHT_TEMP_SIDE)
+  settings.side_display = settings_t::side_display_t::DHT_TEMP;
+#elif defined(DHT_HUM_SIDE)
+  settings.side_display = settings_t::side_display_t::DHT_HUM;
+#elif defined(DHT_HI_SIDE)
+  settings.side_display = settings_t::side_display_t::DHT_HI;
+#elif defined(RTC_SEC_SIDE)
+  settings.side_display = settings_t::side_display_t::RTC_SEC;
+#elif defined(NONE)
+  settings.side_display = settings_t::side_display_t::NONE;
+#else
+  settings.side_display = settings_t::side_display_t::RTC_SEC;
+#endif
+  // Delay
   // delay(1000 * BOOT_SECONDS); // delay for stability
   lcd.clear();
 }
@@ -143,10 +183,18 @@ void loop() {
   unsigned long curr = millis();
   if (curr - prev_gfx >= int_gfx) {
     prev_gfx = curr;
-    handlers[page].draw(&handlers[page], ptr_table);
+    if (display_enable) {
+      handlers[page].draw(&handlers[page], ptr_table);
+    }
   }
-  // enc.tick();
-  enc1.tick();
+  // Update encoder
+  enc.tick();
+  // Procces button
+  btn.tick();
+  if (btn.isClick()) {
+    display_enable = !display_enable;
+    lcd.toogle();
+  }
   // long pos   = enc.getPosition();
   // bool click = enc.btnClick();
   // if ((pos != last_enc_pos) || click) {
@@ -186,11 +234,46 @@ void loop() {
   //   }
   //   last_enc_pos = pos;
   // }
+  if (curr - prev_cntrl >= int_cntrl) {
+    prev_cntrl = curr;
+    enc.latch();
+    page_ch pch = handlers[page].ctrl(&handlers[page], ptr_table);
+    switch (pch) {
+    case page_ch::NEXT_PAGE:
+      page++;
+      if (page > MAX_PAGE) {
+	page = 0;
+      }
+      break;
+    case page_ch::PREV_PAGE:
+      if (page == 0) {
+	page = MAX_PAGE;
+      } else {
+	page--;
+      }
+      break;
+    case page_ch::DEFAULT_CTRL:
+      if (enc.state() == encstate::ROTATION) {
+	if (enc.direction() == 1) {
+	  page++;
+	  if (page > MAX_PAGE) {
+	    page = 0;
+	  }
+	} else if (enc.direction() == -1) {
+	  if (page == 0) {
+	    page = MAX_PAGE;
+	  } else {
+	    page--;
+	  }
+	}
+      }
+      break;
+    case page_ch::NO_CHANGE:
+      [[fallthrough]];
+    default:
+      break;
+    }
 #if defined(DEBUG) && defined(DBG_INPUT)
-  static unsigned long tmr_dbg_enc = 0;
-  if (curr - tmr_dbg_enc >= 100) {
-    tmr_dbg_enc = curr;
-    enc1.latch();
     Serial.print("Input sampling: ");
     switch (enc1.state()) {
     case encstate::NONE:
@@ -222,8 +305,8 @@ void loop() {
       }
     } break;
     }
-  }
 #endif
+  }
   // btn.tick(); // tick for button
   // static byte screen = 0;
   // if (btn.isClick()) // if click -> screen++ or screen = 0

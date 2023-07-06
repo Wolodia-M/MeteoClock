@@ -51,6 +51,9 @@ enum chars {
   COG = 0,
   CLOCK = 1,
   WIFI = 2,
+  OK = 3,
+  LOAD = 4,
+  SAVE = 5,
 };
 } // namespace STNG
 /**
@@ -99,8 +102,10 @@ public:
    * @param num => int -> Data to write
    * @param x => uint8_t -> Column
    * @param y => uint8_t -> Row
+   * @param pad => int -> Set fixed width for number, add leading zeroes,
+   * default -1
    */
-  void writeNum(int num, uint8_t x, uint8_t y);
+  void writeNum(int num, uint8_t x, uint8_t y, int pad = -1);
   /**
    * @brief Write float to LCD
    *
@@ -143,8 +148,10 @@ public:
    * @brief Print without cursor
    *
    * @param num => int -> Data to write
+   * @param pad => int -> Set fixed width for number, add leading zeroes,
+   * default -1
    */
-  void writeCont(int num);
+  void writeCont(int num, int pad = -1);
   /**
    * @brief Print without cursor
    *

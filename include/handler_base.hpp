@@ -25,10 +25,13 @@
 #define GET_PAGE_VAR(page) uint8_t *page = (uint8_t *)(*(args + 0))
 #define GET_LCD_OBJ(lcd) LCD *lcd = (LCD *)(*(args + 1))
 #define GET_RTC_OBJ(rtc) DS3231 *rtc = (DS3231 *)(*(args + 2))
-#define GET_ENC_OBJ(enc) encapi *enc = (encapi *)(*(args + 3))
+#define GET_ENC_OBJ(enc) Encoder *enc = (Encoder *)(*(args + 3))
 #define GET_UDP_OBJ(udp) WiFiUDP *udp = (WiFiUDP *)(*(args + 4))
 #define GET_NTP_OBJ(ntp) NTPClient *ntp = (NTPClient *)(*(args + 5))
-#define GET_STATE_VAR(state) uint8_t state = *((uint8_t *)(*(args + 6)))
+#define GET_BMP_OBJ(bmp) SFE_BMP180 *bmp = (SFE_BMP180 *)(*(args + 6))
+#define GET_BTN_OBJ(btn) btnapi *btn = (btnapi *)(*(args + 7))
+#define GET_DHT_OBJ(dht) DHTesp *dht = (DHTesp *)(*(args + 8))
+#define GET_STNG_VAR(stng) settings_t *stng = (settings_t *)(*(args + 9))
 /**
  * @brief How to change page based on handler_t::ctrl
  */

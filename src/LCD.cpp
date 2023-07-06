@@ -1,5 +1,5 @@
 /**
- * @file lcd->cpp
+ * @file lcd.cpp
  * @author WolodiaM (w_melnyk@outlook.com)
  * @brief LCDWrapper implementation
  * @version 1.0
@@ -43,6 +43,9 @@ namespace STNG {
 uint8_t cog[] = {0x00, 0x0A, 0x15, 0x0A, 0x15, 0x0A, 0x00, 0x00};
 uint8_t clock[] = {0x00, 0x0E, 0x04, 0x0E, 0x15, 0x15, 0x13, 0x0E};
 uint8_t wifi[] = {0x00, 0x04, 0x0A, 0x11, 0x04, 0x0A, 0x04, 0x04};
+uint8_t ok[] = {0x00, 0x01, 0x01, 0x11, 0x0A, 0x0A, 0x04, 0x00};
+uint8_t save[] = {0x00, 0x00, 0x04, 0x04, 0x15, 0x0E, 0x04, 0x00};
+uint8_t load[] = {0x00, 0x04, 0x0E, 0x15, 0x04, 0x04, 0x04, 0x00};
 } // namespace STNG
 /* LCDWrapper.hpp */
 LCD::LCD() {
@@ -392,9 +395,14 @@ void LCD::print9(int x) {
 }
 #pragma endregion BigNum
 // Direct print functions
-void LCD::writeNum(int num, uint8_t x, uint8_t y) {
+void LCD::writeNum(int num, uint8_t x, uint8_t y, int pad) {
   this->lcd->setCursor(x, y);
-  this->lcd->printf("%d", num);
+  if (pad <= 0) {
+    this->lcd->printf("%d", num);
+  } else {
+    String str = "%" + String(pad) + "d";
+    this->lcd->printf(str.c_str(), num);
+  }
 }
 void LCD::writeNum(float num, uint8_t x, uint8_t y, uint8_t prescion) {
   this->lcd->setCursor(x, y);
@@ -414,7 +422,14 @@ void LCD::writeBigNumber(int h, int m) {
   this->printDigit(12, this->getDigit(m, 2));
 }
 void LCD::writeCont(String str) { this->lcd->print(str); }
-void LCD::writeCont(int num) { this->lcd->printf("%d", num); }
+void LCD::writeCont(int num, int pad) {
+  if (pad <= 0) {
+    this->lcd->printf("%d", num);
+  } else {
+    String str = "%" + String(pad) + "d";
+    this->lcd->printf(str.c_str(), num);
+  }
+}
 void LCD::writeCont(float num, uint8_t prescion) {
   String val = String("%.") + String(prescion) + String("f");
   this->lcd->printf(val.c_str(), num);
@@ -450,6 +465,9 @@ void LCD::loadCharset(charset ch) {
     this->lcd->createChar(STNG::COG, STNG::cog);
     this->lcd->createChar(STNG::CLOCK, STNG::clock);
     this->lcd->createChar(STNG::WIFI, STNG::wifi);
+    this->lcd->createChar(STNG::OK, STNG::ok);
+    this->lcd->createChar(STNG::LOAD, STNG::load);
+    this->lcd->createChar(STNG::SAVE, STNG::save);
     break;
   default:
     return;
