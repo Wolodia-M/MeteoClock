@@ -994,7 +994,6 @@ bool tmr = true;
 void bmp_init(handler_t *handler, void **args) {
   GET_BMP_OBJ(bmp);
   bmp->begin();
-  Serial.println("1234");
 }
 void bmp_draw(handler_t *handler, void **args) {
   if (bmp_handler::tmr == true) {
